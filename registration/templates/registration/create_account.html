@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Create an account{% endblock %}
+
+{% block content %}
+
+<p>
+  Please complete the short sign-up form below to register for WebMapReduce.
+</p>
+
+<form method="post" action="{% url registration.views.create_account %}">
+  {% csrf_token %}
+  
+  {% if form.non_field_errors %}
+    <div class="error-box">
+      <h4>Errors:</h4>
+      {{ form.non_field_errors }}
+    </div>
+  {% endif %}
+  <fieldset>
+    {% for field in form %}
+    <div class="field {{ field.css_classes }}">
+      {{ field.label_tag }}
+      {{ field }}
+      <p class="help">{{ field.help_text }}</p>
+      {{ field.errors }}
+    </div>
+    {% endfor %}
+  </fieldset>
+  <input type="submit" name="submit" value="Register" />
+</form>
+
+{% endblock %}

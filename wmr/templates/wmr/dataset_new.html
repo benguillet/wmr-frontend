@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}New Public Dataset{% endblock %}
+
+{% block content %}
+
+{{ form.media }}
+
+<form action="{% url wmr.views.dataset_new %}" method="post">
+  {% csrf_token %}
+  
+  {% if form.non_field_errors %}
+    <div class="error-box">
+      <h4>Errors:</h4>
+      {{ form.non_field_errors }}
+    </div>
+  {% endif %}
+  <fieldset>
+    {% for field in form %}
+    <div class="field {{ field.css_classes }}">
+      {{ field.label_tag }}
+      {{ field }}
+      <p class="help">{{ field.help_text }}</p>
+      {{ field.errors }}
+    </div>
+    {% endfor %}
+  </fieldset>
+  <input type="submit" name="submit" value="Create" />
+</form>
+
+{% endblock %}

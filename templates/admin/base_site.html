@@ -1,0 +1,9 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ title }} | WebMapReduce admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url wmr.views.job_new %}" style="color: inherit">WebMapReduce</a> administration</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Job {{ status.state_display|default:"Status" }}{% endblock %}
+
+{% block content %}
+
+{% if status.info %}
+<ul class="toolbar">
+  {% if not status.is_finished %}
+  <li><a href="{% url wmr.views.job_kill job.id %}">Kill Job</a></li>
+  {% else %}
+  <li><a href="{% url wmr.views.job_new %}?config={{ job.config.id }}">Resubmit Job</a></li>
+  <li><a href="{% url wmr.views.job_new %}?output_from={{ job.config.id }}&input_path={{ status.info.outputPath }}">Use Output</a></li>
+  {% endif %}
+</ul>
+{% endif %}
+
+{% if error %}
+
+<div class="error-box">
+  <h2>{{ error.title }}</h2>
+  <p>{{ error.message }}</p>
+  {% if error.additional_info %}
+    <table class="error-info">
+      {{ error.additional_info.as_table }}
+    </table>
+  {% endif %}
+</div>
+
+{% else %}
+
+{% if status.mapStatus %}
+<section>
+<h3>Map</h3>
+{% with status.mapStatus as phase_status %}
+<table class="info">
+  <tr>
+    <th>State</th>
+    <td>{{ phase_status.state_display }}</td>
+  </tr>
+  <tr>
+    <th>Progress</th>
+    <td>
+      <progress max="100" value="{{ phase_status.progress }}">
+	{{ phase_status.progress }}%
+      </progress>
+    </td>
+  </tr>
+  {% if phase_status.totalTasks %}
+  <tr>
+    <th>Tasks</th>
+    <td>{{ phase_status.totalTasks }}</td>
+  </tr>
+  {% endif %}
+  {% if phase_status.code %}
+  	<tr>
+  	  <th>Exit Code</th>
+	  <td>{{ phase_status.code }}</td>
+ 	</tr>
+  {% endif %}
+  {% if phase_status.errors %}
+  	<tr>
+  	  <th>Error Messages</th>
+	  <td><pre>{{ phase_status.errors }}</pre></td>
+ 	</tr>
+  {% endif %}
+  {% if phase_status.output %}
+  	<tr>
+  	  <th>Output</th>
+	  <td><pre>{{ phase_status.output }}</pre></td>
+ 	</tr>
+  {% endif %}
+  {% if phase_status.outputPath %}
+  	<tr>
+  	  <th>Output Path</th>
+	  <td>{{ phase_status.outputPath }}</td>
+ 	</tr>
+  {% endif %}
+</table>
+{% endwith %}
+</section>
+{% endif %}
+
+{% if status.reduceStatus %}
+<section>
+<h3>Reduce</h3>
+{% with status.reduceStatus as phase_status %}
+<table class="info">
+  <tr>
+    <th>State</th>
+    <td>{{ phase_status.state_display }}</td>
+  </tr>
+  <tr>
+    <th>Progress</th>
+    <td>
+      <progress max="100" value="{{ phase_status.progress }}">
+	{{ phase_status.progress }}%
+      </progress>
+    </td>
+  </tr>
+  {% if phase_status.totalTasks %}
+  <tr>
+    <th>Tasks</th>
+    <td>{{ phase_status.totalTasks }}</td>
+  </tr>
+  {% endif %}
+  {% if phase_status.code %}
+  	<tr>
+  	  <th>Exit Code</th>
+	  <td>{{ phase_status.code }}</td>
+ 	</tr>
+  {% endif %}
+  {% if phase_status.errors %}
+  	<tr>
+  	  <th>Error Messages</th>
+	  <td><pre>{{ phase_status.errors }}</pre></td>
+ 	</tr>
+  {% endif %}
+  {% if phase_status.output %}
+  	<tr>
+  	  <th>Output</th>
+	  <td><pre>{{ phase_status.output }}</pre></td>
+ 	</tr>
+  {% endif %}
+</table>
+{% endwith %}
+</section>
+{% endif %}
+
+{% if output %}
+  <section>
+  <h3>Output</h3>
+  <pre>{{ output.data }}</pre>
+  {% with output.paginator as paginator %}
+    {% include "pagination.html" %}
+  {% endwith %}
+  </section>
+{% endif %}
+
+{% if status.info %}
+<section>
+<h3>Job Info</h3>
+<table class="info">
+  <tr>
+    <th>Name</th>
+    <td>{{ status.info.name }}</td>
+  </tr>
+  <tr>
+    <th>Test Job</th>
+    <td>{{ status.info.test|yesno:"Yes,No" }}</td>
+  </tr>
+  {% if status.info.nativeID %}
+  	<tr>
+  	  <th>Hadoop ID</th>
+  	  <td>{{ status.info.nativeID }}</td>
+    </tr>
+  {% endif %}
+  {% if status.info.outputPath %}
+  	<tr>
+  		<th>Output Path:</th>
+  		<td>{{ status.info.outputPath }}</td>
+  	</tr>
+  {% endif %}
+  {% if status.info.input %}
+  	<tr>
+  	  <th>Input Path</th>
+  	  <td>{{ status.info.input }}</td>
+    </tr>
+  {% endif %}
+  {% if status.info.mapTasks %}
+  	<tr>
+  	  <th>Map Tasks</th>
+  	  <td>{{ status.info.mapTasks }}</td>
+    </tr>
+  {% endif %}
+  {% if status.info.reduceTasks %}
+  	<tr>
+  	  <th>Reduce Tasks</th>
+  	  <td>{{ status.info.reduceTasks }}</td>
+    </tr>
+  {% endif %}
+  {% if status.info.mapper %}
+    <tr>
+      <th>Mapper</th>
+      <td><pre>{{ status.info.mapper }}</pre></td>
+    </tr>
+  {% endif %}
+  {% if status.info.reducer %}
+    <tr>
+      <th>Reducer</th>
+      <td><pre>{{ status.info.reducer }}</pre></td>
+    </tr>
+  {% endif %}
+</table>
+</section>
+{% endif %}
+
+{% if status.info %}
+<ul class="toolbar">
+  {% if not status.is_finished %}
+  <li><a href="{% url wmr.views.job_kill job.id %}">Kill Job</a></li>
+  {% else %}
+  <li><a href="{% url wmr.views.job_new %}?config={{ job.config.id }}">Resubmit Job</a></li>
+  <li><a href="{% url wmr.views.job_new %}?output_from={{ job.config.id }}&input_path={{ status.info.outputPath }}">Use Output</a></li>
+  {% endif %}
+</ul>
+{% endif %}
+
+{% endif %}
+
+{% endblock %}

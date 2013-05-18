@@ -1,0 +1,384 @@
+@page-background: rgb(250, 250, 250);
+@header-color: #9F3;
+@header-background: rgb(68, 68, 68);
+@nav-width: 15em;
+@nav-background: white;
+@footer-color: rgb(200, 200, 200);
+@footer-background: @header-background;
+@link-color: #333;
+@link-color-hover: #666;
+@error-color: rgb(171, 18, 12);
+@error-background: rgb(255, 201, 201);
+@body-padding: 10em;
+
+@accent-1: rgb(255, 219, 35);
+@accent-2: rgb(132, 182, 255);
+@accent-light: rgb(204, 204, 204);
+
+@shadow-color: rgb(200, 200, 200);
+
+@footer-height: 3em;
+@footer-adjust: .25em;
+
+@monospace: Inconsolata, monospace;
+@sans-serif: Cantarell, sans-serif;
+
+.border-radius(@radius-top, @radius-bottom) {
+	-webkit-border-top-left-radius: @radius-top;
+	-webkit-border-top-right-radius: @radius-top;
+	-webkit-border-bottom-left-radius: @radius-bottom;
+	-webkit-border-bottom-right-radius: @radius-bottom;
+	-moz-border-radius-topleft: @radius-top;
+	-moz-border-radius-topright: @radius-top;
+	-moz-border-radius-bottomleft: @radius-bottom;
+	-moz-border-radius-bottomright: @radius-bottom;
+	border-top-left-radius: @radius-top;
+	border-top-right-radius: @radius-top;
+	border-bottom-left-radius: @radius-bottom;
+	border-bottom-right-radius: @radius-bottom;
+}
+
+.box-shadow(@horiz, @vert, @blur: 0, @spread: 0, @color: rgb(250, 250, 250)) {
+	-webkit-box-shadow: @horiz @vert @blur @spread @color;
+	-moz-box-shadow: @horiz @vert @blur @spread @color;
+	box-shadow: @horiz @vert @blur @spread @color
+}
+
+.text-shadow(@horiz, @vert, @blur: 0, @color: rgb(250, 250, 250)) {
+	-webkit-text-shadow: @horiz @vert @blur @color;
+	-moz-text-shadow: @horiz @vert @blur @color;
+	text-shadow: @horiz @vert @blur @color
+}
+
+.shadowed {
+	.box-shadow(2px, 2px, 5px, 0, @shadow-color);
+}
+
+* {
+	margin: 0;
+}
+
+html, body {
+	height: 100%;
+}
+
+html {
+	overflow-y: scroll;
+}
+
+body {
+	margin: 0 auto;
+	padding: 0;
+	font-family: @sans-serif;
+	max-width: 60em;
+	background-color: @page-background;
+}
+
+.wrapper {
+	/* From http://ryanfait.com/resources/footer-stick-to-bottom-of-page/ */
+	min-height: 100%;
+	height: auto !important;
+	height: 100%;
+	margin: 0 auto (0 - @footer-height);
+}
+
+header#page-header, footer {
+	#logo, a {
+		color: white;
+	}
+	
+	a:hover {
+		color: @header-color;
+	}
+}
+
+header#page-header {
+	display: block;
+	position: relative;
+	padding: 1em;
+	margin: 0;
+	background: @header-background;
+	color: @header-color;
+	.border-radius(0, .5em);
+	.shadowed;
+	overflow: auto;
+	
+	#logo, h1 {
+		display: inline-block;
+		font-family: Gruppo, monospace;
+		padding: 0;
+		margin: 0;
+		.text-shadow(.05em, .05em, .1em, rgb(193, 193, 193));
+	}
+	
+	.account-info {
+		position: absolute;
+		top: 1em;
+		right: 1em;
+	}
+}
+
+nav {
+	float: left;
+	width: @nav-width;
+	margin: 0 (0 - @nav-width) 0 0;
+	padding: 0 0 1em 0;
+	
+	ul {
+		position: relative;
+		background-color: #CF9;
+		.border-radius(0, .5em);
+		margin: 0 1em;
+		padding: 1em;
+		list-style: none;
+		.shadowed;
+		z-index: 100000;
+	}
+}
+
+#content {
+	padding: 1em;
+	border-left: @nav-width solid @page-background;
+	
+	h2 {
+		//@border: 1px solid rgb(199, 231, 62);
+		//border-top: @border;
+		//border-bottom: @border;
+		margin-top: .25em;
+	}
+}
+
+.push {
+	height: @footer-height;
+}
+
+footer {
+	display: block;
+	margin: 0 0 (0 - @footer-adjust) 0;
+	height: @footer-height;
+	clear: both;
+	color: @footer-color;
+	background-color: @footer-background;
+	overflow-y: hidden;
+	.border-radius(.5em, 0);
+	//.shadowed;
+	
+	p {
+		font-size: .75em;
+		padding: 1.25em;
+		margin: 0 0;	
+	}
+}
+
+a {
+	color: @link-color;
+}
+
+a:hover {
+	color: @link-color-hover;
+}
+
+h2 {
+	margin-bottom: .5em;
+}
+
+h3 {
+	margin: 1em 0 .5em 0;
+}
+
+table.info {
+	td, th {
+		vertical-align: top;
+		padding: .25em;
+	}
+	
+	th {
+		text-align: right;
+	}
+}
+
+table.listing {
+	border-collapse: collapse;
+	
+	td, th {
+		border: 1px solid black;
+		margin: 0;
+		padding: .2em;
+	}
+	
+	tr a {
+		color: black;
+	}
+	
+	tr.faded td,
+	tr.faded td a {
+		color: rgb(100, 100, 100);
+		font-style: italic;
+	}
+}
+
+.error-box {
+	border: 1px solid @error-color;
+	color: @error-color;
+	background-color: @error-background;
+	padding: .5em;
+}
+
+pre {
+	font-family: @monospace;
+	font-size: small;
+	border: 2px dashed @accent-2;
+	padding: .25em;
+	margin: 0;
+	overflow:auto;
+}
+
+ul.pagination {
+	list-style: none;
+	overflow: auto;
+	margin: 0;
+	padding: 0;
+	
+	li {
+		display: block;
+		float: left;
+		margin: .25em;
+		padding: 0 .25em;
+		text-align: center;
+		//border: 2px solid @accent-light;
+		color: @accent-light / 2;
+	}
+	
+	li.number {
+		min-width: 1.5em;
+	}
+	
+	li:hover, li.current {
+		color: @accent-light / 4;
+	}
+}
+
+form {
+	header a {
+		display: block;
+		text-decoration: none;
+		font-weight: bold;
+		margin: 0 -.5em;
+
+		img {
+			vertical-align: baseline;
+			border: none;
+			margin-right: .25em;
+		}
+	}
+
+	header a:hover {
+		background-color:#DEFFDE;
+	}
+	
+	fieldset {
+		border: 1px solid green;
+		.border-radius(.5em, .5em);
+		margin: 1em 0;
+		padding: .5em 1em;
+	}
+	
+	.field {
+		margin: .5em 0;
+	}
+
+	.error-field {
+		color: red;
+	}
+	
+	.required-field label:after {
+		content: " *"
+	}
+
+	label,
+	.errorlist,
+	input, textarea, select {
+		display: inline-block;
+	}
+	
+	.wide input[type="text"] {
+		width: 50%;
+	}
+	
+	textarea {
+		display: block;
+		width: 99%;
+		margin-top: .5em;
+		font-family: @monospace;
+	}
+
+	label {
+		width: 10em;
+	}
+	
+	.help {
+		color: rgb(100, 100, 100);
+		font-size: small;
+	}
+}
+
+section {
+	display: block;
+	margin: 1em 0;
+	padding: .5em;
+	border: 1px solid @accent-1;
+	.border-radius(.5em, .5em);
+	
+	h1, h2, h3, h4, h5, h6 {
+		margin: 0 0 .75em 0;
+	}
+}
+
+.collapsed .content {
+	display: none;
+}
+
+.flash {
+	color: @accent-1 / 2;
+	background-color: @accent-1 * 2;
+	.border-radius(.5em, .5em);
+	padding: .25em .5em;
+}
+
+ul.toolbar
+{
+	list-style:none;
+	overflow:auto;
+	margin:0;
+	padding:0;
+	
+	li
+	{
+		float:left;
+	}
+	
+	a
+	{
+		display:block;
+		margin:0.25em;
+		padding: 0 0.25em;
+		text-align:center;
+		color: @accent-light / 2;
+	}
+	
+	a:hover
+	{
+		text-decoration:none;
+	}
+}
+
+.zebra1
+{
+    background-color:#ddd;
+}
+
+.zebra2
+{
+    background-color:#fff;
+}
+

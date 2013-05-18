@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}New Job{% endblock %}
+
+{% block content %}
+
+{% if error %}
+<div class="error-box">
+  <h2>{{ error.title }}</h2>
+  <p>{{ error.message }}</p>
+  {% if error.additional_info %}
+    <table class="error-info">
+      {{ error.additional_info.as_table }}
+    </table>
+  {% endif %}
+</div>
+{% endif %}
+
+{{ form.media }}
+
+<form id="job-form" action="{% url wmr.views.job_new %}" method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <fieldset id="info" class="collapsable">
+    <header>Job Info</a>
+    </header>
+    <div class="content">
+      <div class="field {{ form.name.css_classes }}">
+        {{ form.name.label_tag }}
+        {{ form.name }}
+        {{ form.name.errors }}
+      </div>
+      <div class="field {{ form.language.css_classes }}">
+        {{ form.language.label_tag }}
+        {{ form.language }}
+        {{ form.language.errors }}
+      </div>
+      <div class="field {{ form.map_tasks.css_classes }}">
+        {{ form.map_tasks.label_tag }}
+        {{ form.map_tasks }}
+        {{ form.map_tasks.errors }}
+      </div>
+      <div class="field {{ form.reduce_tasks.css_classes }}">
+        {{ form.reduce_tasks.label_tag }}
+        {{ form.reduce_tasks }}
+        {{ form.reduce_tasks.errors }}
+      </div>
+      <div class="field {{ form.sort.css_classes }}">
+        {{ form.sort.label_tag }}
+        {{ form.sort }}
+        {{ form.sort.errors }}
+      </div>
+    </div>	
+  </fieldset>
+  <fieldset id="input" class="collapsable">
+    <header>Input</header>
+    <div id="input-content" class="content">
+      {% if form.input_source.errors %}
+        <div class="field">{{ form.input_source.errors }}</div>
+      {% endif %}
+      <div class="field {{ form.input.css_classes }}">
+        {{ form.input_source.dataset }}
+        {{ form.input.label_tag }}
+        {{ form.input }}
+        {{ form.input.errors }}
+      </div>
+      <div class="field wide {{ form.input_path.css_classes }}">
+        {{ form.input_source.path }}
+        {{ form.input_path.label_tag }}
+        {{ form.input_path }}
+        {{ form.input_path.errors }}
+      </div>
+      <div class="field {{ form.input_file.css_classes }}">
+        {{ form.input_source.upload }}
+        {{ form.input_file.label_tag }}
+        {{ form.input_file }}
+        {{ form.input_file.errors }}
+      </div>
+      <div class="field {{ form.input_text.css_classes }}">
+        {{ form.input_source.input }}
+        {{ form.input_text.label_tag }}
+        {{ form.input_text.errors }}
+        {{ form.input_text }}
+      </div>
+    </div>
+  </fieldset>
+  <fieldset id="mapper" class="collapsable">
+    <header>Mapper</header>
+    <div id="mapper-content" class="content">
+      {% if form.mapper_source.errors %}
+        <div class="field">{{ form.mapper_source.errors }}</div>
+      {% endif %}
+      <div class="field {{ form.mapper_file.css_classes }}">
+        {{ form.mapper_source.upload }}
+        {{ form.mapper_file.label_tag }}
+        {{ form.mapper_file }}
+        {{ form.mapper_file.errors }}
+      </div>
+      <div class="field {{ form.mapper.css_classes }}">
+        {{ form.mapper_source.input }}
+        {{ form.mapper.label_tag }}
+        {{ form.mapper.errors }}
+        {{ form.mapper }}
+      </div>
+    </div>
+  </fieldset>
+  <fieldset id="reducer" class="collapsable">
+    <header>Reducer</header>
+    <div id="reducer-content" class="content">
+      {% if form.reducer_source.errors %}
+        <div class="field">{{ form.reducer_source.errors }}</div>
+      {% endif %}
+      <div class="field {{ form.reducer_file.css_classes }}">
+        {{ form.reducer_source.upload }}
+        {{ form.reducer_file.label_tag }}
+        {{ form.reducer_file }}
+        {{ form.reducer_file.errors }}
+      </div>
+      <div class="field {{ form.reducer.css_classes }}">
+        {{ form.reducer_source.input }}
+        {{ form.reducer.label_tag }}
+        {{ form.reducer.errors }}
+        {{ form.reducer }}
+      </div>
+    </div>
+  </fieldset>
+  <input type="submit" name="submit" value="Submit" />
+  {# TODO: hide the following button if test jobs are disabled on this end: requires modifying views.py #}
+  <input type="submit" name="submit" value="Test" />
+  <input type="submit" name="submit" value="Save" />
+</form>
+
+{% endblock %}

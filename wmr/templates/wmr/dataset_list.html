@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Datasets{% endblock %}
+
+{% block content %}
+  
+  <h3>Public</h3>
+  {% if perms.wmr.add_dataset %}
+    <ul class="toolbar">
+      <li><a href="{% url wmr.views.dataset_new %}">New</a></li>
+    </ul>
+  {% endif %}
+  <table class="listing">
+    <tr>
+      <th>Name</th>
+      <th>Path</th>
+      <th>Owner</th>
+      <th>Actions</th>
+    </tr>
+    
+    {% for ds in public_datasets %}
+      <tr class="{% cycle 'zebra1' 'zebra2' %}">
+        <td>
+          {{ ds.name|default:"--" }}
+        </td>
+        <td>{{ ds.path }}</td>
+        <td>{{ ds.owner }}</td>
+        <td>
+          <a href="{% url wmr.views.job_new %}?input={{ ds.id }}">Use</a>
+          {% if perms.wmr.delete_dataset %}
+            <a href="{% url wmr.views.dataset_delete ds.id %}">Delete</a>
+          {% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="4" style="text-align: center">(none)</td>
+      </tr>
+    {% endfor %}
+  </table>
+  
+  <h3>Recent</h3>
+  <table class="listing" style="margin-bottom:0.5em;">
+    <tr>
+      <th>Path</th>
+      <th>Uploaded</th>
+      <th>Actions</th>
+    </tr>
+    
+    {% for ds in datasets %}
+      <tr class="{% cycle 'zebra1' 'zebra2' %}">
+        <td>{{ ds.path }}</td>
+        <td>{{ ds.upload_time|timesince }} ago</td>
+        <td>
+            <a href="{% url wmr.views.job_new %}?input={{ ds.id }}">Use</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="3" style="text-align: center">(none)</td>
+      </tr>
+    {% endfor %}
+  </table>
+  
+{% endblock %}
