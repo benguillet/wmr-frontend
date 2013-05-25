@@ -1,7 +1,9 @@
 from django.http import HttpResponseRedirect
+from django.http import HttpResponse
 from django.template import RequestContext
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required, permission_required
 from wmr.models import Job, Dataset, Configuration, SavedConfiguration
 from wmr.forms import ConfigurationForm, PublicDatasetForm
@@ -9,6 +11,7 @@ from wmr.errors import WMRError, WMRBackendInternalError, WMRThriftError
 from wmr import client
 from wmr.thriftapi.ttypes import *
 import datetime
+import json
 
 @login_required
 def job_new(request):
@@ -200,6 +203,10 @@ def job_new(request):
         'flash': flash,
     }))
 
+@csrf_exempt
+def remote_job_new(request):
+    response_data = "wooorks!!!"
+    return HttpResponse(json.dumps(response_data), mimetype="application/json")
 
 STATE_DISPLAYS = {
     State.PREP: 'Initializing',

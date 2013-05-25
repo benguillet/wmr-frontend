@@ -23,6 +23,9 @@ urlpatterns = patterns('',
     (r'^jobs/(?P<job_id>\d+)/$', 'wmr.views.job_view'),
     (r'^configs/$', 'wmr.views.configs'),
     
+    # WMR remote calls
+    (r'^remote/jobs/new/$', 'wmr.views.remote_job_new'),
+    
     # Admin
     (r'^admin/', include(admin.site.urls)),
     

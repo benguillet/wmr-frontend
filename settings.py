@@ -74,6 +74,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
@@ -96,6 +97,14 @@ INSTALLED_APPS = (
     'wmr',
     'registration',
     'south',
+    'corsheaders',
+)
+
+# Corsheaders settings
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = (
+    'localhost',
+    'localhost:8000'
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
