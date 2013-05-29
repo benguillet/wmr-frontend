@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 from django.http import HttpResponse
 from django.template import RequestContext
@@ -19,6 +20,7 @@ def job_new(request):
     if request.method == 'POST':
         form = ConfigurationForm(request.POST, request.FILES)
         if form.is_valid():
+            print request.user
             # Handle input
             input_source = form.cleaned_data['input_source']
             if input_source == 'dataset':
@@ -34,9 +36,9 @@ def job_new(request):
                 else:
                     # Read text field
                     input_data = form.cleaned_data['input_text']
-                
+
                 name = form.cleaned_data['name']
-                
+
                 # Attempt to store on backend
                 try:
                     with client.connect() as service:
@@ -48,7 +50,7 @@ def job_new(request):
                 else:
                     input = Dataset(path=real_path, owner=request.user)
                     input.save()
-                
+
                 # Stop if upload failed
                 if error:
                     return render_to_response('wmr/job_new.html',
@@ -56,31 +58,31 @@ def job_new(request):
                             'form': form,
                             'error': error,
                         }))
-                
-            
+
+
             # Handle mapper
             mapper_source = form.cleaned_data['mapper_source']
             if mapper_source == 'upload':
                 mapper = form.cleaned_data['mapper_file'].read()
             else:
                 mapper = form.cleaned_data['mapper']
-            
+
             # Handle reducer
             reducer_source = form.cleaned_data['reducer_source']
             if reducer_source == 'upload':
                 reducer = form.cleaned_data['reducer_file'].read()
             else:
                 reducer = form.cleaned_data['reducer']
-            
-            
+
+
             # Create configuration object
             config = form.save(commit=False)
             config.owner = request.user
             config.input = input
             config.mapper = mapper
             config.reducer = reducer
-            
-            
+
+
             if request.POST['submit'] == "Save":
                 # Save (or update) configuration
                 saved_config = None
@@ -91,7 +93,7 @@ def job_new(request):
                     pass
                 except SavedConfiguration.DoesNotExist:
                     saved_config = None
-                        
+
                 if saved_config:
                     # Update existing configuration
                     saved_config.update_from_other(config)
@@ -106,7 +108,7 @@ def job_new(request):
                     saved_config.save()
                     flash = "Configuration succesfully saved."
 
-                 
+
 		# if the input source was not the dataset, the data was either already in
 		# or put in a data path. Set the input field to that path.
 		# (This may not be the best way to do that, but it worked.)
@@ -117,17 +119,17 @@ def job_new(request):
             else:
                 # Save configuration
                 config.save()
-                
+
                 # Determine whether job is test
                 test = (request.POST['submit'] == 'Test')
-                
+
                 # Submit job to backend
                 thrift_request = config.to_thrift_request(test)
                 try:
                     with client.connect() as service:
                         backend_id = service.submit(thrift_request)
                 except (ValidationException, CompilationException,
-                        PermissionException, QuotaException, 
+                        PermissionException, QuotaException,
                         ForbiddenTestJobException) as ex:
                     error = WMRError(ex)
                 except NotFoundException as ex:
@@ -141,10 +143,10 @@ def job_new(request):
                     job = Job(config=config, owner=request.user, test=test,
                               backend_id=backend_id)
                     job.save()
-                    
+
                     return HttpResponseRedirect(reverse(job_view, args=[job.id]))
     else:
-        
+
         config = input = None
 
         if 'config' in request.GET:
@@ -155,7 +157,7 @@ def job_new(request):
                 error = WMRError(ex, title='Configuration not found')
             else:
                 input = config.input
-            
+
         elif 'output_from' in request.GET:
             from_id = request.GET['output_from']
             from_config = None
@@ -167,20 +169,20 @@ def job_new(request):
                 config = Configuration()
                 config.language = from_config.language
                 config.name = from_config.name + "-phase"
-                
+
                 input_path = request.GET.get('input_path', None)
                 if input_path:
                     input = Dataset(path=input_path, owner=request.user)
                     # Don't save it--just use its path below
-        
+
         else:
             input_id = request.GET.get('input', None)
             try:
                 input = Dataset.objects.get(pk=input_id)
             except Dataset.DoesNotExist:
                 input = None
-        
-        
+
+
         # Determine correct form field for input
         formdata = {}
         if input:
@@ -194,9 +196,9 @@ def job_new(request):
                    'input_source': 'path',
                    'input_path': input.path,
                 }
-        
+
         form = ConfigurationForm(instance=config, initial=formdata)
-    
+
     return render_to_response('wmr/job_new.html', RequestContext(request, {
         'form': form,
         'error': error,
@@ -205,8 +207,65 @@ def job_new(request):
 
 @csrf_exempt
 def remote_job_new(request):
-    response_data = "wooorks!!!"
-    return HttpResponse(json.dumps(response_data), mimetype="application/json")
+    error = None
+    if request.method == 'POST':
+        input_data = request.POST['input_text']
+        mapper     = request.POST['mapper']
+        reducer    = request.POST['reducer']
+
+        name = request.POST['name']
+        request_user = User.objects.get(username__exact=name)
+        # Attempt to store on backend
+        try:
+            with client.connect() as service:
+                real_path = service.storeDataset(name, input_data)
+        except InternalException as ex:
+            error = WMRBackendInternalError(ex)
+        except TException as ex:
+            error = WMRThriftError(ex)
+        else:
+            input = Dataset(path=real_path, owner=request_user)
+            input.save()
+
+        # Stop if upload failed
+        if error:
+             return HttpResponse(error.message, content_type='text/plain', status=500)
+
+        # Create configuration object
+        config         = Configuration()
+        config.owner   = request_user
+        config.input   = input
+        config.mapper  = mapper
+        config.reducer = reducer
+        config.save()
+
+        # Determine whether job is test
+        test = (request.POST['submit'] == 'Test')
+
+        # submit job to backend
+        thrift_request = config.to_thrift_request(test)
+        try:
+            with client.connect() as service:
+                backend_id = service.submit(thrift_request)
+        except (ValidationException, CompilationException,
+                PermissionException, QuotaException,
+                ForbiddenTestJobException) as ex:
+            error = WMRError(ex)
+        except NotFoundException as ex:
+            error = WMRError(ex, title='Input Not Found')
+        except InternalException as ex:
+            error = WMRBackendInternalError(ex)
+        except TException as ex:
+            error = WMRThriftError(ex)
+        else:
+            # Save job and redirect to view page
+            job = Job(config=config, owner=request_user, test=test,
+                    backend_id=backend_id)
+            job.save()
+
+        return HttpResponse(json.dumps(reverse(job_view, args=[job.id])), mimetype='application/json')
+
+
 
 STATE_DISPLAYS = {
     State.PREP: 'Initializing',
@@ -220,7 +279,7 @@ STATE_DISPLAYS = {
 @login_required
 def job_view(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
-    
+
     status = error = output = paginator = refresh = None
     try:
         with client.connect() as service:
@@ -235,17 +294,17 @@ def job_view(request, job_id):
         # Update cached job status
         job.update_status(status)
         job.save()
-        
+
         # Determine whether or not a job is finished
         status.is_finished = (status.state == State.SUCCESSFUL or
                 status.state == State.KILLED or status.state == State.FAILED)
-        
+
         if not status.is_finished:
             if datetime.datetime.now() - job.submit_time > datetime.timedelta(minutes=5):
                 refresh = 15
             else:
                 refresh = 5
-        
+
         # Retrieve output page if appropriate
         if (status.state == State.SUCCESSFUL and status.reduceStatus and
             status.reduceStatus.output is None and
@@ -258,7 +317,7 @@ def job_view(request, job_id):
                     page = 1
             except ValueError:
                 page = 1
-            
+
             # Fetch page
             try:
                 with client.connect() as service:
@@ -281,7 +340,7 @@ def job_view(request, job_id):
                         'data': data_page.data,
                         'paginator': paginator,
                     }
-        
+
         # Set human-readable state values
         if status.state:
             status.state_display = STATE_DISPLAYS[status.state]
@@ -291,13 +350,13 @@ def job_view(request, job_id):
         if status.reduceStatus and status.reduceStatus.state:
             status.reduceStatus.state_display = \
                 STATE_DISPLAYS[status.reduceStatus.state]
-        
+
         # Create a configuration that re-uses the input
         recycle = Configuration()
         recycle.language = job.config.language
         recycle.name = job.config.name
         recycle.input = job.config.input
-        
+
     return render_to_response('wmr/job_view.html', RequestContext(request, {
         'job': job,
         'status': status,
@@ -332,11 +391,11 @@ def dataset_new(request):
             dataset.owner = request.user
             dataset.public = True
             dataset.save()
-            
+
             return HttpResponseRedirect(reverse('wmr.views.dataset_list'))
     else:
         form = PublicDatasetForm()
-    
+
     return render_to_response('wmr/dataset_new.html', RequestContext(request, {
         'form': form,
     }))
@@ -352,7 +411,7 @@ def job_kill(request, job_id):
         # Kill the specified job.
         job = get_object_or_404(Job, pk=job_id)
         status = error = None
-        
+
         try:
                 with client.connect() as service:
                         status = service.getStatus(job.backend_id)
@@ -367,7 +426,7 @@ def job_kill(request, job_id):
                 error = WMRBackendInternalError(ex)
         except TException as ex:
                 error = WMRThriftError(ex)
-        
+
         return render_to_response('wmr/job_kill.html', RequestContext(request,
         {
                 'job': job,
@@ -399,26 +458,26 @@ class SimplePaginator(object):
                 lower_page = 1
             else:
                 lower_page = current_page - 2
-            
+
             if current_page >= (last_page - 4):
                 upper_page = last_page
             else:
                 upper_page = current_page + 2
-            
+
             pages = range(lower_page, upper_page + 1)
             if lower_page != 1:
                 pages = [1, '...'] + pages
             if upper_page != last_page:
                 pages = pages + ['...', last_page]
-        
+
         self.pages = pages
         self.current_page = current_page
         self.last_page = last_page
         self.has_previous = (current_page != 1)
         self.has_next = (current_page != last_page)
-    
+
     def previous_page(self):
         return self.current_page - 1
-    
+
     def next_page(self):
         return self.current_page + 1
