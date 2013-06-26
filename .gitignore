@@ -3,3 +3,4 @@
 *.pyc
 db/*.sqlite
 .DS_Store
+local_settings.py
