@@ -20,7 +20,6 @@ def job_new(request):
     if request.method == 'POST':
         form = ConfigurationForm(request.POST, request.FILES)
         if form.is_valid():
-            print request.user
             # Handle input
             input_source = form.cleaned_data['input_source']
             if input_source == 'dataset':
@@ -232,11 +231,13 @@ def remote_job_new(request):
              return HttpResponse(error.message, content_type='text/plain', status=500)
 
         # Create configuration object
-        config         = Configuration()
-        config.owner   = request_user
-        config.input   = input
-        config.mapper  = mapper
-        config.reducer = reducer
+        config          = Configuration()
+        config.owner    = request_user
+        config.input    = input
+        config.language = 'javascript'
+        config.sort     = 'a'
+        config.mapper   = mapper
+        config.reducer  = reducer
         config.save()
 
         # Determine whether job is test
@@ -262,7 +263,8 @@ def remote_job_new(request):
             job = Job(config=config, owner=request_user, test=test,
                     backend_id=backend_id)
             job.save()
-
+        # if success, return the job view url to the client, which can open a popup with 
+        # the job progress and result
         return HttpResponse(json.dumps(reverse(job_view, args=[job.id])), mimetype='application/json')
 
 
