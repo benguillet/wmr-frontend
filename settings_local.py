@@ -65,7 +65,7 @@ WMR_DEFAULT_LANGUAGE = 'javascript'
 ## Uncomment to enable running test jobs. Test jobs should also be enabled on
 ## the backend for this to work.
 ##
-#WMR_ALLOW_TEST_JOBS = True
+WMR_ALLOW_TEST_JOBS = True
 
 
 ##
